@@ -1,0 +1,26 @@
+{
+  "name": "救急トイレマップ",
+  "short_name": "救急トイレ",
+  "description": "緊急時にすぐ近くのトイレを探せるアプリ",
+  "start_url": "/emergency-toilet-map/",
+  "scope": "/emergency-toilet-map/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d1117",
+  "theme_color": "#1a73e8",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
