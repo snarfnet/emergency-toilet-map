@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a73e8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="救急トイレ">
+  <title>🚨 救急トイレマップ</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+      background: #0d1117;
+      color: #fff;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      padding: 24px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .icon-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-bg {
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, #1a73e830 0%, transparent 70%);
+      border-radius: 50%;
+      position: absolute;
+      animation: pulse-bg 2s ease-in-out infinite;
+    }
+
+    .icon {
+      font-size: 72px;
+      line-height: 1;
+      position: relative;
+      z-index: 1;
+      animation: bounce 1.5s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    @keyframes pulse-bg {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.3); opacity: 1; }
+    }
+
+    .title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .title span {
+      color: #ff4444;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #8b949e;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* メインボタン */
+    .btn-main {
+      width: 100%;
+      padding: 22px;
+      background: linear-gradient(135deg, #1a73e8, #0d47a1);
+      border: none;
+      border-radius: 20px;
+      color: #fff;
+      font-size: 20px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      box-shadow: 0 8px 32px rgba(26, 115, 232, 0.4);
+      transition: transform 0.1s, box-shadow 0.1s;
+      -webkit-tap-highlight-color: transparent;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-main:active {
+      transform: scale(0.97);
+      box-shadow: 0 4px 16px rgba(26, 115, 232, 0.3);
+    }
+
+    .btn-main.loading {
+      background: linear-gradient(135deg, #555, #333);
+      box-shadow: none;
+      pointer-events: none;
+    }
+
+    /* サブボタン群 */
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .btn-sub {
+      padding: 16px 12px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 14px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-sub:active {
+      background: #21262d;
+      transform: scale(0.97);
+    }
+
+    .btn-sub .emoji {
+      font-size: 24px;
+    }
+
+    .btn-sub .label {
+      font-size: 12px;
+      color: #8b949e;
+    }
+
+    /* ステータス表示 */
+    .status {
+      font-size: 13px;
+      color: #8b949e;
+      text-align: center;
+      min-height: 20px;
+      transition: color 0.3s;
+    }
+
+    .status.error { color: #ff6b6b; }
+    .status.ok { color: #3fb950; }
+
+    /* 位置情報バー */
+    .location-bar {
+      width: 100%;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #8b949e;
+      min-height: 48px;
+    }
+
+    .location-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #8b949e;
+      flex-shrink: 0;
+    }
+
+    .location-dot.active {
+      background: #3fb950;
+      animation: blink 1.5s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #ffffff40;
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="icon-wrap">
+    <div class="icon-bg"></div>
+    <div class="icon">🚨</div>
+  </div>
+
+  <div>
+    <div class="title"><span>救急</span>トイレマップ</div>
+  </div>
+
+  <div class="location-bar" id="locBar">
+    <div class="location-dot" id="locDot"></div>
+    <span id="locText">位置情報を取得中...</span>
+  </div>
+
+  <button class="btn-main" id="btnMain" onclick="findToilet()">
+    <span>🚽</span>
+    <span>今すぐトイレを探す</span>
+  </button>
+
+  <div class="btn-grid">
+    <button class="btn-sub" onclick="openCategory('コンビニ')">
+      <span class="emoji">🏪</span>
+      <span>コンビニ</span>
+      <span class="label">トイレ貸出あり</span>
+    </button>
+    <button class="btn-sub" onclick="openCategory('デパート')">
+      <span class="emoji">🏬</span>
+      <span>デパート・商業施設</span>
+      <span class="label">無料トイレ</span>
+    </button>
+    <button class="btn-sub" onclick="openCategory('公園 トイレ')">
+      <span class="emoji">🌳</span>
+      <span>公園</span>
+      <span class="label">公共トイレ</span>
+    </button>
+    <button class="btn-sub" onclick="openCategory('駅 トイレ')">
+      <span class="emoji">🚉</span>
+      <span>駅</span>
+      <span class="label">駅構内トイレ</span>
+    </button>
+  </div>
+
+  <div class="status" id="status"></div>
+
+</div>
+
+<script>
+  let currentLat = null;
+  let currentLng = null;
+
+  // 起動時に即GPS取得開始
+  function initGPS() {
+    if (!navigator.geolocation) {
+      setStatus('位置情報が使えません', 'error');
+      setLocBar(false, 'GPS非対応のブラウザです');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        currentLat = pos.coords.latitude;
+        currentLng = pos.coords.longitude;
+        setLocBar(true, `現在地取得済み（精度 ±${Math.round(pos.coords.accuracy)}m）`);
+        setStatus('準備完了 — ボタンを押してください', 'ok');
+      },
+      (err) => {
+        const msg = {
+          1: '位置情報の許可が必要です（設定から許可してください）',
+          2: 'GPS信号を受信できません',
+          3: '位置情報の取得がタイムアウトしました',
+        }[err.code] || '位置情報を取得できませんでした';
+        setLocBar(false, msg);
+        setStatus(msg, 'error');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    );
+  }
+
+  function findToilet() {
+    openCategory('トイレ');
+  }
+
+  function openCategory(keyword) {
+    const btn = document.getElementById('btnMain');
+
+    if (currentLat && currentLng) {
+      // 現在地あり → 現在地中心で検索
+      const url = `https://www.google.com/maps/search/${encodeURIComponent(keyword)}/@${currentLat},${currentLng},16z`;
+      window.open(url, '_blank');
+    } else {
+      // 位置情報なし → Googleマップの現在地検索にフォールバック
+      setStatus('位置情報なし — Googleマップで検索します', 'error');
+      const url = `https://www.google.com/maps/search/${encodeURIComponent(keyword)}`;
+      window.open(url, '_blank');
+    }
+  }
+
+  function setLocBar(active, text) {
+    document.getElementById('locDot').className = 'location-dot' + (active ? ' active' : '');
+    document.getElementById('locText').textContent = text;
+  }
+
+  function setStatus(msg, type = '') {
+    const el = document.getElementById('status');
+    el.textContent = msg;
+    el.className = 'status ' + type;
+  }
+
+  // 起動時
+  initGPS();
+</script>
+</body>
+</html>
